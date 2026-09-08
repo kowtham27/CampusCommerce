@@ -1,0 +1,443 @@
+// Campus Commerce — Prisma schema
+// Hosted on Supabase Postgres (see /instruction.md). directUrl is used for migrations
+// through Supabase's connection pooler.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum Condition {
+  BRAND_NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  USED
+}
+
+enum ListingStatus {
+  ACTIVE
+  PAUSED
+  SOLD
+  REMOVED
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  WITHDRAWN
+}
+
+enum RentalStatus {
+  REQUESTED
+  APPROVED
+  ACTIVE
+  RETURNED
+  REJECTED
+  CANCELLED
+}
+
+enum ExchangeStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportReason {
+  FAKE_PRODUCT
+  SCAM
+  WRONG_DESCRIPTION
+  INAPPROPRIATE_CONTENT
+  SUSPICIOUS_SELLER
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum ReportAction {
+  DISMISSED
+  WARNED_USER
+  REMOVED_LISTING
+  SUSPENDED_USER
+}
+
+enum NotificationType {
+  OFFER_RECEIVED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  OFFER_COUNTERED
+  LISTING_VIEWS
+  EXCHANGE_REQUEST
+  EXCHANGE_ACCEPTED
+  RENTAL_REQUEST
+  RENTAL_APPROVED
+  NEW_MESSAGE
+  ORDER_UPDATE
+  REVIEW_RECEIVED
+  SYSTEM
+}
+
+enum TransactionKind {
+  SALE
+  RENTAL
+  EXCHANGE
+}
+
+// ---------- Core models ----------
+
+model User {
+  id             String        @id @default(cuid())
+  fullName       String
+  email          String        @unique
+  passwordHash   String
+  department     String?
+  year           String?
+  hostelBlock    String?
+  phone          String?
+  avatarUrl      String?
+  bio            String?
+  role           Role          @default(STUDENT)
+  status         AccountStatus @default(ACTIVE)
+  emailVerified  Boolean       @default(false)
+  onboarded      Boolean       @default(false)
+  interests      String[]      @default([])
+  trustScore     Int           @default(60)
+  sessionVersion Int           @default(0)
+  responseRate   Int           @default(0)
+  profileVisible Boolean       @default(true)
+  contactVisible Boolean       @default(false)
+  notifyMessages Boolean       @default(true)
+  notifyOffers   Boolean       @default(true)
+  notifyOrders   Boolean       @default(true)
+  notifyRecs     Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  otpCodes       OtpCode[]
+  products       Product[]           @relation("SellerProducts")
+  wishlist       Wishlist[]
+  buyerOrders    Order[]             @relation("BuyerOrders")
+  sellerOrders   Order[]             @relation("SellerOrders")
+  renterRentals  Rental[]            @relation("RenterRentals")
+  ownerRentals   Rental[]            @relation("OwnerRentals")
+  requestedExch  Exchange[]          @relation("RequesterExchanges")
+  ownerExchanges Exchange[]          @relation("OwnerExchanges")
+  offersMade     Offer[]             @relation("BuyerOffers")
+  offersReceived Offer[]             @relation("SellerOffers")
+  conversationsA Conversation[]      @relation("ParticipantA")
+  conversationsB Conversation[]      @relation("ParticipantB")
+  messagesSent   Message[]
+  reviewsWritten Review[]            @relation("ReviewsWritten")
+  reviewsAbout   Review[]            @relation("ReviewsAbout")
+  notifications  Notification[]
+  reportsFiled   Report[]            @relation("ReportedBy")
+  reportsAgainst Report[]            @relation("ReportedUser")
+  transactions   Transaction[]       @relation("TransactionParties")
+  savedSearches  String[]            @default([])
+
+  @@index([email])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  purpose   String   @default("VERIFY_EMAIL")
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  icon     String    @default("Package")
+  products Product[]
+}
+
+model CampusLocation {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  type      String    @default("Other")
+  latOffset Float     @default(0)
+  lngOffset Float     @default(0)
+  products  Product[]
+}
+
+model Product {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  categoryId       String
+  sellerId         String
+  condition        Condition
+  originalPrice    Int?
+  price            Int
+  isSellable       Boolean       @default(true)
+  isRentable       Boolean       @default(false)
+  rentDaily        Int?
+  rentWeekly       Int?
+  rentMonthly      Int?
+  rentDeposit      Int?
+  isExchangeable   Boolean       @default(false)
+  exchangeWants    String[]      @default([])
+  tags             String[]      @default([])
+  brand            String?
+  ageMonths        Int?
+  locationId       String?
+  status           ListingStatus @default(ACTIVE)
+  viewCount        Int           @default(0)
+  distanceMeters    Int          @default(250)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  category     Category         @relation(fields: [categoryId], references: [id])
+  seller       User             @relation("SellerProducts", fields: [sellerId], references: [id], onDelete: Cascade)
+  location     CampusLocation?  @relation(fields: [locationId], references: [id])
+  images       ProductImage[]
+  wishlistedBy Wishlist[]
+  orders       Order[]
+  rentals      Rental[]
+  exchanges    Exchange[]
+  offers       Offer[]
+  conversations Conversation[]
+  reports      Report[]
+  transactions Transaction[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  position  Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  productId   String
+  buyerId     String
+  sellerId    String
+  price       Int
+  status      OrderStatus @default(PENDING)
+  pickupNote  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  buyer   User    @relation("BuyerOrders", fields: [buyerId], references: [id])
+  seller  User    @relation("SellerOrders", fields: [sellerId], references: [id])
+
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model Rental {
+  id           String       @id @default(cuid())
+  productId    String
+  renterId     String
+  ownerId      String
+  startDate    DateTime
+  endDate      DateTime
+  totalPrice   Int
+  deposit      Int          @default(0)
+  status       RentalStatus @default(REQUESTED)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  renter  User    @relation("RenterRentals", fields: [renterId], references: [id])
+  owner   User    @relation("OwnerRentals", fields: [ownerId], references: [id])
+
+  @@index([renterId])
+  @@index([ownerId])
+}
+
+model Exchange {
+  id             String         @id @default(cuid())
+  productId      String
+  requesterId    String
+  ownerId        String
+  offeredItem    String
+  status         ExchangeStatus @default(REQUESTED)
+  message        String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  product   Product @relation(fields: [productId], references: [id])
+  requester User    @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  owner     User    @relation("OwnerExchanges", fields: [ownerId], references: [id])
+
+  @@index([requesterId])
+  @@index([ownerId])
+}
+
+model Offer {
+  id         String      @id @default(cuid())
+  productId  String
+  buyerId    String
+  sellerId   String
+  amount     Int
+  message    String?
+  status     OfferStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  buyer   User    @relation("BuyerOffers", fields: [buyerId], references: [id])
+  seller  User    @relation("SellerOffers", fields: [sellerId], references: [id])
+
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model Conversation {
+  id             String   @id @default(cuid())
+  productId      String?
+  participantAId String
+  participantBId String
+  lastMessageAt  DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  product      Product? @relation(fields: [productId], references: [id])
+  participantA User     @relation("ParticipantA", fields: [participantAId], references: [id])
+  participantB User     @relation("ParticipantB", fields: [participantBId], references: [id])
+  messages     Message[]
+
+  @@unique([participantAId, participantBId, productId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User          @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+}
+
+model Review {
+  id               String   @id @default(cuid())
+  authorId         String
+  subjectId        String
+  transactionId    String?
+  overallRating    Int
+  conditionRating  Int
+  communicationRating Int
+  transactionRating   Int
+  comment          String?
+  createdAt        DateTime @default(now())
+
+  author  User @relation("ReviewsWritten", fields: [authorId], references: [id])
+  subject User @relation("ReviewsAbout", fields: [subjectId], references: [id])
+
+  @@index([subjectId])
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  productId      String?
+  reportedUserId String?
+  reportedById   String
+  reason         ReportReason
+  details        String?
+  status         ReportStatus @default(PENDING)
+  action         ReportAction?
+  createdAt      DateTime     @default(now())
+  resolvedAt     DateTime?
+
+  product      Product? @relation(fields: [productId], references: [id])
+  reportedUser User?    @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  reportedBy   User     @relation("ReportedBy", fields: [reportedById], references: [id])
+
+  @@index([status])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  kind        TransactionKind
+  productId   String
+  amount      Int
+  createdAt   DateTime        @default(now())
+
+  product      Product @relation(fields: [productId], references: [id])
+  participants User[]  @relation("TransactionParties")
+}
