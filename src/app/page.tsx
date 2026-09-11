@@ -17,6 +17,7 @@ import { MarketingHeader } from "@/components/MarketingHeader";
 import { MarketingFooter } from "@/components/MarketingFooter";
 import { CategoryCard } from "@/components/CategoryCard";
 import { FloatingCard } from "@/components/landing/FloatingCard";
+import { PageFadeIn } from "@/components/PageFadeIn";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES } from "@/lib/constants";
@@ -43,40 +44,42 @@ export default async function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-2 md:items-center md:py-24">
-          <div className="space-y-6">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted-foreground">
-              <ShieldCheck size={13} className="text-primary" /> Verified students only
-            </span>
-            <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
-              Your Campus.
-              <br />
-              Your Marketplace.
-            </h1>
-            <p className="max-w-md text-base text-muted-foreground sm:text-lg">
-              Buy, sell, rent, and exchange everything you need — directly within your
-              campus community.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link href="/explore">
-                  Explore Marketplace <ArrowRight size={16} />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="/sell">Sell an Item</Link>
-              </Button>
+        <PageFadeIn>
+          <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-2 md:items-center md:py-24">
+            <div className="space-y-6">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted-foreground">
+                <ShieldCheck size={13} className="text-primary" /> Verified students only
+              </span>
+              <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
+                Your Campus.
+                <br />
+                Your Marketplace.
+              </h1>
+              <p className="max-w-md text-base text-muted-foreground sm:text-lg">
+                Buy, sell, rent, and exchange everything you need — directly within your
+                campus community.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link href="/explore">
+                    Explore Marketplace <ArrowRight size={16} />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/sell">Sell an Item</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative mx-auto hidden h-80 w-full max-w-md sm:block">
+              <FloatingCard icon="BookOpen" title="Engineering Mathematics" price="₹350" distance="220m away" className="left-0 top-2" delay={0} />
+              <FloatingCard icon="Laptop" title="MacBook Air M2" price="₹52,000" distance="480m away" className="right-0 top-16" delay={0.6} />
+              <FloatingCard icon="Calculator" title="Casio fx-991ES Plus" price="₹650" distance="150m away" className="left-6 top-44" delay={1.1} />
+              <FloatingCard icon="Headphones" title="Bluetooth Headphones" price="₹1,200" distance="310m away" className="right-4 bottom-2" delay={0.3} />
+              <FloatingCard icon="Camera" title="Canon DSLR" price="₹500/day" distance="400m away" className="left-24 bottom-16" delay={0.9} />
             </div>
           </div>
-
-          <div className="relative mx-auto hidden h-80 w-full max-w-md sm:block">
-            <FloatingCard icon="BookOpen" title="Engineering Mathematics" price="₹350" distance="220m away" className="left-0 top-2" delay={0} />
-            <FloatingCard icon="Laptop" title="MacBook Air M2" price="₹52,000" distance="480m away" className="right-0 top-16" delay={0.6} />
-            <FloatingCard icon="Calculator" title="Casio fx-991ES Plus" price="₹650" distance="150m away" className="left-6 top-44" delay={1.1} />
-            <FloatingCard icon="Headphones" title="Bluetooth Headphones" price="₹1,200" distance="310m away" className="right-4 bottom-2" delay={0.3} />
-            <FloatingCard icon="Camera" title="Canon DSLR" price="₹500/day" distance="400m away" className="left-24 bottom-16" delay={0.9} />
-          </div>
-        </div>
+        </PageFadeIn>
       </section>
 
       {/* How it works */}

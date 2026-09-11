@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { MobileNav } from "@/components/MobileNav";
+import { PageTransition } from "@/components/PageTransition";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -10,7 +11,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <Navbar />
-      <main className="flex-1 pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 pb-20 md:pb-0">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <MobileNav />
     </div>
   );

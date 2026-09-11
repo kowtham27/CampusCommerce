@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DEMO_STUDENT_EMAIL, DEMO_ADMIN_EMAIL, DEMO_PASSWORD } from "@/lib/constants";
 
 function LoginForm() {
   const router = useRouter();
@@ -50,11 +49,6 @@ function LoginForm() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function fillDemo(role: "student" | "admin") {
-    setEmail(role === "student" ? DEMO_STUDENT_EMAIL : DEMO_ADMIN_EMAIL);
-    setPassword(DEMO_PASSWORD);
   }
 
   return (
@@ -112,18 +106,6 @@ function LoginForm() {
           Log in
         </Button>
       </form>
-
-      <div className="mt-5 rounded-md border border-dashed border-border-strong p-3 text-center text-xs text-muted-foreground">
-        <p className="mb-2 font-medium text-foreground">Try a demo account</p>
-        <div className="flex justify-center gap-2">
-          <button type="button" onClick={() => fillDemo("student")} className="rounded-md border border-border px-2.5 py-1 hover:bg-surface-muted">
-            Student
-          </button>
-          <button type="button" onClick={() => fillDemo("admin")} className="rounded-md border border-border px-2.5 py-1 hover:bg-surface-muted">
-            Admin
-          </button>
-        </div>
-      </div>
     </AuthCard>
   );
 }
