@@ -44,6 +44,8 @@ export default async function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
+        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-32 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
         <PageFadeIn>
           <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-2 md:items-center md:py-24">
             <div className="space-y-6">

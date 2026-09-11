@@ -25,7 +25,7 @@ export function ProductCard({
     <Link
       href={`/product/${product.id}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-shadow hover:shadow-md",
+        "group flex flex-col overflow-hidden rounded-lg border border-border bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-lg",
         className
       )}
     >

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { Logo } from "@/components/Logo";
 
 export function AuthCard({
   title,
@@ -25,8 +26,8 @@ export function AuthCard({
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="w-full max-w-sm"
         >
-          <Link href="/" className="mb-8 block text-center text-lg font-extrabold tracking-tight text-foreground">
-            Campus<span className="text-primary">Commerce</span>
+          <Link href="/" className="mb-8 flex items-center justify-center">
+            <Logo />
           </Link>
           <div className="rounded-xl border border-border bg-surface p-7 shadow-sm">
             <div className="mb-6 space-y-1 text-center">

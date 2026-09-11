@@ -9,6 +9,8 @@
  * callers only depend on the returned string[] of URLs.
  */
 
+import { resolveProductImage } from "@/lib/productImages";
+
 export function isStorageConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
@@ -17,8 +19,7 @@ export async function uploadListingImages(files: File[], seedHint: string): Prom
   if (files.length === 0) return [];
 
   if (!isStorageConfigured()) {
-    const safeHint = seedHint.replace(/[^a-zA-Z0-9-]+/g, "-").slice(0, 40);
-    return files.map((_, i) => `https://picsum.photos/seed/${safeHint}-${i}-${Date.now()}/640/480`);
+    return files.map(() => resolveProductImage(seedHint));
   }
 
   // Real upload path once Supabase Storage is configured.

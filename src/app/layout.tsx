@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
+
+const THEME_INIT_SCRIPT = `
+try {
+  var t = localStorage.getItem("cc-theme");
+  if (t === "light" || t === "dark") {
+    document.documentElement.setAttribute("data-theme", t);
+  }
+} catch (e) {}
+`;
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -35,9 +45,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
-        <Toaster position="top-center" richColors closeButton />
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-center" richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );

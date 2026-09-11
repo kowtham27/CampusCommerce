@@ -112,13 +112,26 @@ This populates the database with demo students, listings, categories, reviews, e
 If you want real image uploads instead of placeholder images:
 
 1. In Supabase: **Storage → New Bucket** → name it `listing-images` → make it **Public**.
-2. Get your project URL and anon key from **Project Settings → API**:
+2. Making the bucket "Public" only allows public *reads* — you also need to explicitly allow uploads. Go to **Storage → Policies** (or run this in the SQL Editor) to allow anonymous uploads to this bucket:
+   ```sql
+   create policy "Public upload to listing-images"
+   on storage.objects for insert
+   to anon
+   with check (bucket_id = 'listing-images');
+
+   create policy "Public read of listing-images"
+   on storage.objects for select
+   to anon
+   using (bucket_id = 'listing-images');
+   ```
+   (Without the insert policy, uploads will fail with a "row-level security policy" error even though the bucket is public.)
+3. Get your project URL and anon key from **Project Settings → API**:
    ```
    NEXT_PUBLIC_SUPABASE_URL="https://xxxxxxxxxxxx.supabase.co"
    NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon public key>"
    ```
-3. Add those two to `.env` as well.
-4. The app's `storageService` (in `services/`) will use these automatically if present; otherwise it falls back to placeholder images so the UI never breaks.
+4. Add those two to `.env` (local) **and** to your Vercel project's Environment Variables (production) — then redeploy.
+5. The app's `storageService` (in `services/`) will use these automatically if present; otherwise it falls back to placeholder images so the UI never breaks.
 
 ---
 

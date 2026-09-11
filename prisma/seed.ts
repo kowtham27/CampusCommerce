@@ -1,5 +1,6 @@
 import { PrismaClient, Condition, OrderStatus, OfferStatus, NotificationType, ReportReason } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { resolveProductImage, avatarForIndex } from "../src/lib/productImages";
 
 const prisma = new PrismaClient();
 
@@ -46,10 +47,6 @@ const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 function pick<T>(arr: readonly T[], i: number): T {
   return arr[i % arr.length];
-}
-function seededImage(seed: string, w = 640, h = 480) {
-  const safeSeed = seed.replace(/[^a-zA-Z0-9-]+/g, "-").slice(0, 60);
-  return `https://picsum.photos/seed/${safeSeed}/${w}/${h}`;
 }
 
 type ProductSeed = {
@@ -214,7 +211,7 @@ async function main() {
         interests: [pick(CATEGORIES, i).name, pick(CATEGORIES, i + 2).name],
         trustScore: 55 + ((i * 7) % 40),
         responseRate: 40 + ((i * 11) % 60),
-        avatarUrl: seededImage(`avatar-${i}`, 200, 200),
+        avatarUrl: avatarForIndex(i),
       },
     });
     otherUsers.push(user);
@@ -253,7 +250,7 @@ async function main() {
         distanceMeters: 80 + ((i * 47) % 900),
         images: {
           create: [0, 1].map((n) => ({
-            url: seededImage(`${p.title}-${n}`),
+            url: resolveProductImage(p.title, p.categorySlug),
             position: n,
           })),
         },

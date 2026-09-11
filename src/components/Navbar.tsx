@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Heart, MessageCircle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 import { SearchBar } from "@/components/SearchBar";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
@@ -37,8 +38,8 @@ export async function Navbar() {
   return (
     <header className="sticky top-0 z-30 hidden border-b border-border bg-surface/95 backdrop-blur md:block">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6">
-        <Link href="/dashboard" className="shrink-0 text-lg font-extrabold tracking-tight text-foreground">
-          Campus<span className="text-primary">Commerce</span>
+        <Link href="/dashboard" className="shrink-0">
+          <Logo />
         </Link>
 
         <nav className="flex shrink-0 items-center gap-1">

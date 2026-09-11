@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, Users, Package, Flag, ArrowLeft } from "lucide-react";
 import { PageTransition } from "@/components/PageTransition";
+import { Logo } from "@/components/Logo";
 import { getCurrentUser } from "@/lib/auth";
 
 const NAV = [
@@ -20,8 +21,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-dvh bg-background">
       <aside className="hidden w-56 shrink-0 border-r border-border bg-surface md:block">
         <div className="p-5">
-          <Link href="/admin" className="text-base font-extrabold tracking-tight text-foreground">
-            Campus<span className="text-primary">Commerce</span>
+          <Link href="/admin">
+            <Logo size="sm" />
           </Link>
           <p className="mt-0.5 text-xs text-muted-foreground">Admin</p>
         </div>

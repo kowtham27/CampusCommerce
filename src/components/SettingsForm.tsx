@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sun, Moon, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { useTheme, type Theme } from "@/components/ThemeProvider";
 
 type UserSettings = {
   fullName: string;
@@ -45,6 +46,39 @@ function PreferenceRow({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    </div>
+  );
+}
+
+const THEME_OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
+];
+
+function ThemePicker() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="inline-flex rounded-lg border border-border bg-surface-muted p-1">
+      {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
+        const active = theme === value;
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTheme(value)}
+            className={`flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              active
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icon size={14} />
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -146,6 +180,7 @@ export function SettingsForm({ user }: { user: UserSettings }) {
     <Tabs defaultValue="account">
       <TabsList>
         <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsTrigger value="appearance">Appearance</TabsTrigger>
         <TabsTrigger value="notifications">Notifications</TabsTrigger>
         <TabsTrigger value="privacy">Privacy</TabsTrigger>
         <TabsTrigger value="security">Security</TabsTrigger>
@@ -183,6 +218,16 @@ export function SettingsForm({ user }: { user: UserSettings }) {
             {loading === "account" && <Loader2 size={15} className="animate-spin" />}
             Save changes
           </Button>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="appearance">
+        <div className="max-w-md space-y-4 rounded-lg border border-border bg-surface p-5">
+          <div>
+            <p className="text-sm font-medium text-foreground">Theme</p>
+            <p className="text-xs text-muted-foreground">Choose how Campus Commerce looks on this device.</p>
+          </div>
+          <ThemePicker />
         </div>
       </TabsContent>
 

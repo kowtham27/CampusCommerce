@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 const columns = [
   {
@@ -24,10 +25,8 @@ export function MarketingFooter() {
   return (
     <footer className="border-t border-border bg-surface">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.2fr_1fr_1fr]">
-        <div className="space-y-2">
-          <span className="text-lg font-extrabold tracking-tight text-foreground">
-            Campus<span className="text-primary">Commerce</span>
-          </span>
+        <div className="space-y-3">
+          <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">
             A private marketplace for verified students to buy, sell, rent and exchange
             everything they need on campus.
