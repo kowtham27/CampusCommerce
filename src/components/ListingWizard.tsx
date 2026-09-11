@@ -190,7 +190,7 @@ export function ListingWizard({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Photos are stored as placeholders in this demo until Supabase Storage is connected — see instruction.md.
+              Your photos are uploaded and shown exactly as you added them.
             </p>
           </div>
         )}
