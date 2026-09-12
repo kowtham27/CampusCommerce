@@ -158,7 +158,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <SellerCard
               id={product.seller.id}
               fullName={product.seller.fullName}
-              avatarUrl={product.seller.avatarUrl}
+              email={product.seller.email}
               department={product.seller.department}
               year={product.seller.year}
               rating={avgRating}

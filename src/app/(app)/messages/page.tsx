@@ -4,8 +4,8 @@ import { MessageCircle } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getConversationsForUser } from "@/services/messagingService";
 import { EmptyState } from "@/components/EmptyState";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn, formatRelativeTime, initials } from "@/lib/utils";
+import { UserAvatar } from "@/components/UserAvatar";
+import { cn, formatRelativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Messages" };
 
@@ -35,10 +35,7 @@ export default async function MessagesPage() {
               href={`/messages/${c.id}`}
               className="flex items-center gap-3 p-3.5 transition-colors hover:bg-surface-muted"
             >
-              <Avatar className="h-11 w-11">
-                <AvatarImage src={c.other.avatarUrl ?? undefined} />
-                <AvatarFallback>{initials(c.other.fullName)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar email={c.other.email} className="h-11 w-11" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-foreground">{c.other.fullName}</p>

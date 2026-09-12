@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { RatingStars } from "@/components/RatingStars";
-import { initials } from "@/lib/utils";
 
 export function SellerCard({
   id,
   fullName,
-  avatarUrl,
+  email,
   department,
   year,
   rating,
@@ -16,7 +15,7 @@ export function SellerCard({
 }: {
   id: string;
   fullName: string;
-  avatarUrl?: string | null;
+  email: string;
   department?: string | null;
   year?: string | null;
   rating: number;
@@ -28,10 +27,7 @@ export function SellerCard({
       href={`/profile/${id}`}
       className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3.5 transition-colors hover:bg-surface-muted"
     >
-      <Avatar className="h-11 w-11">
-        <AvatarImage src={avatarUrl ?? undefined} />
-        <AvatarFallback>{initials(fullName)}</AvatarFallback>
-      </Avatar>
+      <UserAvatar email={email} className="h-11 w-11" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-semibold text-foreground">{fullName}</p>

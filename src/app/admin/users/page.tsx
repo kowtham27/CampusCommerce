@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { AdminUserActions } from "@/components/admin/AdminUserActions";
-import { initials } from "@/lib/utils";
 
 export const metadata = { title: "Admin · Users" };
 
@@ -53,10 +52,7 @@ export default async function AdminUsersPage({
               <tr key={u.id} className="border-b border-border last:border-0">
                 <td className="p-3.5">
                   <div className="flex items-center gap-2.5">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={u.avatarUrl ?? undefined} />
-                      <AvatarFallback>{initials(u.fullName)}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar email={u.email} className="h-8 w-8" />
                     <div>
                       <p className="font-medium text-foreground">{u.fullName}</p>
                       <p className="text-xs text-muted-foreground">{u.email}</p>

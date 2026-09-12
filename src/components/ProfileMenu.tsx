@@ -20,20 +20,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { initials } from "@/lib/utils";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export function ProfileMenu({
   userId,
   fullName,
   email,
-  avatarUrl,
   isAdmin,
 }: {
   userId: string;
   fullName: string;
   email: string;
-  avatarUrl?: string | null;
   isAdmin?: boolean;
 }) {
   const router = useRouter();
@@ -46,10 +43,7 @@ export function ProfileMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={avatarUrl ?? undefined} alt={fullName} />
-          <AvatarFallback>{initials(fullName)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar email={email} className="h-8 w-8" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-0.5 font-normal">

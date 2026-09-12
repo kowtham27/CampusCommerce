@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ShieldCheck, Leaf } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { RatingStars } from "@/components/RatingStars";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -13,7 +13,7 @@ import { ChatWithSellerButton } from "@/components/ProductActionButtons";
 import { computeTrustScore } from "@/services/trustScoreService";
 import { getUserImpact } from "@/services/sustainabilityService";
 import { getSavedProductIds } from "@/services/wishlistService";
-import { initials, formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/utils";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
@@ -51,10 +51,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 md:py-8">
       <div className="rounded-xl border border-border bg-surface p-6">
         <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:text-left">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={profile.avatarUrl ?? undefined} />
-            <AvatarFallback className="text-xl">{initials(profile.fullName)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar email={profile.email} className="h-20 w-20" fallbackClassName="text-xl" />
           <div className="flex-1 space-y-1.5">
             <h1 className="text-xl font-bold text-foreground">{profile.fullName}</h1>
             <p className="text-sm text-muted-foreground">

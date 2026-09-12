@@ -5,8 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getConversationWithMessages } from "@/services/messagingService";
 import { ChatWindow } from "@/components/ChatWindow";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatPrice, initials } from "@/lib/utils";
+import { UserAvatar } from "@/components/UserAvatar";
+import { formatPrice } from "@/lib/utils";
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,10 +22,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
         <Link href="/messages" className="text-muted-foreground hover:text-foreground">
           <ChevronLeft size={18} />
         </Link>
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={data.other.avatarUrl ?? undefined} />
-          <AvatarFallback>{initials(data.other.fullName)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar email={data.other.email} className="h-9 w-9" />
         <div className="min-w-0 flex-1">
           <Link href={`/profile/${data.other.id}`} className="truncate text-sm font-semibold text-foreground hover:underline">
             {data.other.fullName}

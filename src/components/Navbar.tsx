@@ -36,13 +36,13 @@ export async function Navbar() {
   ]);
 
   return (
-    <header className="sticky top-0 z-30 hidden border-b border-border bg-surface/95 backdrop-blur md:block">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6">
+    <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
         <Link href="/dashboard" className="shrink-0">
           <Logo />
         </Link>
 
-        <nav className="flex shrink-0 items-center gap-1">
+        <nav className="hidden shrink-0 items-center gap-1 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -54,16 +54,16 @@ export async function Navbar() {
           ))}
         </nav>
 
-        <div className="max-w-md flex-1">
+        <div className="hidden max-w-md flex-1 md:block">
           <Suspense fallback={<div className="h-10 rounded-md bg-surface-muted" />}>
             <SearchBar />
           </Suspense>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-1.5">
           <Link
             href="/wishlist"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-muted"
+            className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-muted md:flex"
             aria-label="Wishlist"
           >
             <Heart size={18} />
@@ -81,7 +81,7 @@ export async function Navbar() {
           />
           <Link
             href="/messages"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-muted"
+            className="relative hidden h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-muted md:flex"
             aria-label="Messages"
           >
             <MessageCircle size={18} />
@@ -90,9 +90,9 @@ export async function Navbar() {
             )}
           </Link>
 
-          <div className="mx-1 h-6 w-px bg-border" />
+          <div className="mx-1 hidden h-6 w-px bg-border md:block" />
 
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="hidden md:inline-flex">
             <Link href="/sell"><ShoppingBag size={14} /> Sell an Item</Link>
           </Button>
 
@@ -100,7 +100,6 @@ export async function Navbar() {
             userId={user.id}
             fullName={user.fullName}
             email={user.email}
-            avatarUrl={user.avatarUrl}
             isAdmin={user.role === "ADMIN"}
           />
         </div>
