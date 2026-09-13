@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { searchProducts } from "@/services/productService";
 import { getSavedProductIds } from "@/services/wishlistService";
+import { getCartProductIds } from "@/services/cartService";
 import { ProductGrid } from "@/components/ProductGrid";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -18,9 +19,10 @@ export default async function ExchangePage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [products, savedIds, sent, received] = await Promise.all([
+  const [products, savedIds, cartIds, sent, received] = await Promise.all([
     searchProducts({ type: "exchange", sort: "newest" }),
     getSavedProductIds(user.id),
+    getCartProductIds(user.id),
     prisma.exchange.findMany({
       where: { requesterId: user.id },
       include: { product: { include: { images: true } }, owner: true },
@@ -56,6 +58,7 @@ export default async function ExchangePage() {
           <ProductGrid
             products={products}
             savedIds={savedIds}
+            cartIds={cartIds}
             emptyTitle="No exchange listings yet"
             emptyDescription="List an item you're open to swapping."
           />

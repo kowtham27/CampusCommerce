@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
 import { searchProducts } from "@/services/productService";
 import { getSavedProductIds } from "@/services/wishlistService";
+import { getCartProductIds } from "@/services/cartService";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ProductGrid, ProductGridSkeleton } from "@/components/ProductGrid";
@@ -24,9 +25,10 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
   const minPrice = searchParams.minPrice ? Number(searchParams.minPrice) : undefined;
   const maxPrice = searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined;
 
-  const [products, savedIds] = await Promise.all([
+  const [products, savedIds, cartIds] = await Promise.all([
     searchProducts({ q, category, type, condition, department, hostel, sort, minPrice, maxPrice }),
     getSavedProductIds(user.id),
+    getCartProductIds(user.id),
   ]);
 
   return (
@@ -35,6 +37,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
       <ProductGrid
         products={products}
         savedIds={savedIds}
+        cartIds={cartIds}
         emptyTitle="No products found"
         emptyDescription="Try adjusting your filters or search for something else."
       />

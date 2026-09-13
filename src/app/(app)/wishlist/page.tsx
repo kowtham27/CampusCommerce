@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProductGrid } from "@/components/ProductGrid";
 import { EmptyState } from "@/components/EmptyState";
+import { getCartProductIds } from "@/services/cartService";
 
 export const metadata = { title: "Wishlist" };
 
@@ -10,15 +11,18 @@ export default async function WishlistPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const wishlist = await prisma.wishlist.findMany({
-    where: { userId: user.id },
-    include: {
-      product: {
-        include: { category: true, images: { orderBy: { position: "asc" } }, seller: true, location: true },
+  const [wishlist, cartIds] = await Promise.all([
+    prisma.wishlist.findMany({
+      where: { userId: user.id },
+      include: {
+        product: {
+          include: { category: true, images: { orderBy: { position: "asc" } }, seller: true, location: true },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    }),
+    getCartProductIds(user.id),
+  ]);
 
   const products = wishlist.map((w) => w.product);
 
@@ -38,7 +42,7 @@ export default async function WishlistPage() {
           actionHref="/explore"
         />
       ) : (
-        <ProductGrid products={products} savedIds={new Set(products.map((p) => p.id))} />
+        <ProductGrid products={products} savedIds={new Set(products.map((p) => p.id))} cartIds={cartIds} />
       )}
     </div>
   );

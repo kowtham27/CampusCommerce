@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MessageCircle, ShoppingBag } from "lucide-react";
+import { Loader2, MessageCircle, ShoppingBag, ShoppingCart, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -74,6 +74,45 @@ export function BuyNowButton({ productId }: { productId: string }) {
     <Button onClick={buy} disabled={loading} className="w-full">
       {loading ? <Loader2 size={15} className="animate-spin" /> : <ShoppingBag size={15} />}
       Buy Now
+    </Button>
+  );
+}
+
+export function AddToCartButton({ productId, initialInCart }: { productId: string; initialInCart: boolean }) {
+  const [inCart, setInCart] = useState(initialInCart);
+  const [loading, setLoading] = useState(false);
+
+  async function toggle() {
+    const next = !inCart;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/cart", {
+        method: next ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast.error(data?.error ?? "Couldn't update your cart.");
+        return;
+      }
+      setInCart(next);
+      toast.success(next ? "Added to cart" : "Removed from cart");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Button variant="outline" onClick={toggle} disabled={loading} className="w-full">
+      {loading ? (
+        <Loader2 size={15} className="animate-spin" />
+      ) : inCart ? (
+        <Check size={15} />
+      ) : (
+        <ShoppingCart size={15} />
+      )}
+      {inCart ? "In Cart" : "Add to Cart"}
     </Button>
   );
 }

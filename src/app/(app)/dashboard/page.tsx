@@ -10,6 +10,7 @@ import {
   getNearbyProducts,
 } from "@/services/recommendationService";
 import { getSavedProductIds } from "@/services/wishlistService";
+import { getCartProductIds } from "@/services/cartService";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -22,12 +23,13 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [recommended, trending, recent, nearby, savedIds] = await Promise.all([
+  const [recommended, trending, recent, nearby, savedIds, cartIds] = await Promise.all([
     getRecommendedProducts(user, 8),
     getTrendingProducts(8),
     getRecentProducts(8),
     getNearbyProducts(8),
     getSavedProductIds(user.id),
+    getCartProductIds(user.id),
   ]);
 
   const firstName = user.fullName.split(" ")[0];
@@ -51,22 +53,22 @@ export default async function DashboardPage() {
           title={user.department ? `Recommended for you · because you study ${user.department}` : "Recommended for you"}
           viewAllHref="/explore"
         />
-        <ProductGrid products={recommended} savedIds={savedIds} emptyTitle="Nothing recommended yet" emptyDescription="Browse the marketplace to help us personalize this." />
+        <ProductGrid products={recommended} savedIds={savedIds} cartIds={cartIds} emptyTitle="Nothing recommended yet" emptyDescription="Browse the marketplace to help us personalize this." />
       </section>
 
       <section>
         <SectionHeader title="Trending around campus" viewAllHref="/explore?sort=popular" />
-        <ProductGrid products={trending} savedIds={savedIds} />
+        <ProductGrid products={trending} savedIds={savedIds} cartIds={cartIds} />
       </section>
 
       <section>
         <SectionHeader title="Recently added" viewAllHref="/explore?sort=newest" />
-        <ProductGrid products={recent} savedIds={savedIds} />
+        <ProductGrid products={recent} savedIds={savedIds} cartIds={cartIds} />
       </section>
 
       <section>
         <SectionHeader title="Nearby" viewAllHref="/explore?sort=nearest" />
-        <ProductGrid products={nearby} savedIds={savedIds} />
+        <ProductGrid products={nearby} savedIds={savedIds} cartIds={cartIds} />
       </section>
     </div>
   );

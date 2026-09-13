@@ -9,7 +9,7 @@ import { ReportModal } from "@/components/ReportModal";
 import { OfferModal } from "@/components/OfferModal";
 import { RentalRequestModal } from "@/components/RentalRequestModal";
 import { ExchangeRequestModal } from "@/components/ExchangeRequestModal";
-import { ChatWithSellerButton, BuyNowButton } from "@/components/ProductActionButtons";
+import { ChatWithSellerButton, BuyNowButton, AddToCartButton } from "@/components/ProductActionButtons";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { getProductById, incrementViewCount } from "@/services/productService";
 import { getSimilarProducts } from "@/services/recommendationService";
 import { getSavedProductIds } from "@/services/wishlistService";
+import { getCartProductIds } from "@/services/cartService";
 import { CONDITION_LABELS } from "@/lib/constants";
 import { formatPrice, formatRelativeTime } from "@/lib/utils";
 
@@ -38,12 +39,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   incrementViewCount(id);
 
-  const [reviews, completedOrders, completedRentals, completedExchanges, savedIds, similar] = await Promise.all([
+  const [reviews, completedOrders, completedRentals, completedExchanges, savedIds, cartIds, similar] = await Promise.all([
     prisma.review.findMany({ where: { subjectId: product.sellerId } }),
     prisma.order.count({ where: { sellerId: product.sellerId, status: "COMPLETED" } }),
     prisma.rental.count({ where: { ownerId: product.sellerId, status: "RETURNED" } }),
     prisma.exchange.count({ where: { ownerId: product.sellerId, status: "COMPLETED" } }),
     getSavedProductIds(user.id),
+    getCartProductIds(user.id),
     getSimilarProducts(product.id, product.categoryId),
   ]);
 
@@ -101,7 +103,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2.5">
-              {product.isSellable && !product.isRentable && <BuyNowButton productId={product.id} />}
+              {product.isSellable && !product.isRentable && (
+                <div className="col-span-2">
+                  <BuyNowButton productId={product.id} />
+                </div>
+              )}
+              {product.isSellable && !product.isRentable && (
+                <AddToCartButton productId={product.id} initialInCart={cartIds.has(product.id)} />
+              )}
               {product.isSellable && !product.isRentable && (
                 <OfferModal
                   productId={product.id}
@@ -181,7 +190,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {similar.length > 0 && (
         <div className="mt-12">
           <h2 className="mb-4 text-lg font-bold text-foreground">Similar products</h2>
-          <ProductGrid products={similar} savedIds={savedIds} />
+          <ProductGrid products={similar} savedIds={savedIds} cartIds={cartIds} />
         </div>
       )}
     </div>

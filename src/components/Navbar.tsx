@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Heart, MessageCircle, ShoppingBag } from "lucide-react";
+import { Heart, MessageCircle, ShoppingBag, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { SearchBar } from "@/components/SearchBar";
@@ -8,6 +8,7 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCartCount } from "@/services/cartService";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Home" },
@@ -20,7 +21,7 @@ export async function Navbar() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [notifications, unreadMessages] = await Promise.all([
+  const [notifications, unreadMessages, cartCount] = await Promise.all([
     prisma.notification.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -33,6 +34,7 @@ export async function Navbar() {
         conversation: { OR: [{ participantAId: user.id }, { participantBId: user.id }] },
       },
     }),
+    getCartCount(user.id),
   ]);
 
   return (
@@ -67,6 +69,18 @@ export async function Navbar() {
             aria-label="Wishlist"
           >
             <Heart size={18} />
+          </Link>
+          <Link
+            href="/cart"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-muted"
+            aria-label="Cart"
+          >
+            <ShoppingCart size={18} />
+            {cartCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
           </Link>
           <NotificationDropdown
             initial={notifications.map((n) => ({

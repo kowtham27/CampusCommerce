@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { RatingStars } from "@/components/RatingStars";
 import { LocationBadge } from "@/components/LocationBadge";
 import { WishlistButton } from "@/components/WishlistButton";
+import { CartButton } from "@/components/CartButton";
 import { CONDITION_LABELS } from "@/lib/constants";
 import { cn, formatPrice } from "@/lib/utils";
 import type { ProductCardData } from "@/types";
@@ -12,12 +13,15 @@ import type { ProductCardData } from "@/types";
 export function ProductCard({
   product,
   saved = false,
+  inCart = false,
   className,
 }: {
   product: ProductCardData;
   saved?: boolean;
+  inCart?: boolean;
   className?: string;
 }) {
+  const canAddToCart = product.isSellable && !product.isRentable;
   const image = product.images[0]?.url;
   const rating = product.sellerRating ?? 4.6;
 
@@ -39,11 +43,10 @@ export function ProductCard({
             className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : null}
-        <WishlistButton
-          productId={product.id}
-          initialSaved={saved}
-          className="absolute right-2 top-2"
-        />
+        <div className="absolute right-2 top-2 flex flex-col gap-1.5">
+          <WishlistButton productId={product.id} initialSaved={saved} />
+          {canAddToCart && <CartButton productId={product.id} initialInCart={inCart} />}
+        </div>
         {product.isRentable && (
           <Badge variant="accent" className="absolute left-2 top-2">
             <Repeat size={11} /> Rent

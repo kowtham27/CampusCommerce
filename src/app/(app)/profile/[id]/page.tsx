@@ -13,6 +13,7 @@ import { ChatWithSellerButton } from "@/components/ProductActionButtons";
 import { computeTrustScore } from "@/services/trustScoreService";
 import { getUserImpact } from "@/services/sustainabilityService";
 import { getSavedProductIds } from "@/services/wishlistService";
+import { getCartProductIds } from "@/services/cartService";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,7 +27,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   const isOwn = profile.id === currentUser.id;
 
-  const [listings, reviews, boughtCount, soldCount, trust, impact, savedIds] = await Promise.all([
+  const [listings, reviews, boughtCount, soldCount, trust, impact, savedIds, cartIds] = await Promise.all([
     prisma.product.findMany({
       where: { sellerId: profile.id, status: "ACTIVE" },
       include: { category: true, images: { orderBy: { position: "asc" } }, seller: true, location: true },
@@ -42,6 +43,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     computeTrustScore(profile.id),
     getUserImpact(profile.id),
     getSavedProductIds(currentUser.id),
+    getCartProductIds(currentUser.id),
   ]);
 
   const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.overallRating, 0) / reviews.length : 0;
@@ -103,7 +105,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           {listings.length === 0 ? (
             <EmptyState title="No active listings" />
           ) : (
-            <ProductGrid products={listings} savedIds={savedIds} />
+            <ProductGrid products={listings} savedIds={savedIds} cartIds={cartIds} />
           )}
         </TabsContent>
 

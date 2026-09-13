@@ -6,11 +6,13 @@ import type { ProductCardData } from "@/types";
 export function ProductGrid({
   products,
   savedIds = new Set<string>(),
+  cartIds = new Set<string>(),
   emptyTitle = "No products found",
   emptyDescription = "Try adjusting your filters or check back later.",
 }: {
   products: ProductCardData[];
   savedIds?: Set<string>;
+  cartIds?: Set<string>;
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
@@ -21,7 +23,12 @@ export function ProductGrid({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} saved={savedIds.has(product.id)} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          saved={savedIds.has(product.id)}
+          inCart={cartIds.has(product.id)}
+        />
       ))}
     </div>
   );
