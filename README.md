@@ -3,7 +3,7 @@
 **Your Campus. Your Marketplace.**
 
 A private university marketplace where verified students buy, sell, rent, and exchange
-textbooks, electronics, and everyday campus items — built as a full-stack Next.js app.
+textbooks, electronics, and everyday campus items.
 
 ## Project Overview
 
@@ -16,129 +16,159 @@ and every listing supports one or more of three transaction types: **sell**, **r
 
 - Email-domain-gated registration with OTP verification
 - Personalized dashboard (recommended / trending / recent / nearby)
-- Full-text-style search with suggestions, filters, and shareable URL state
+- Search with filters and shareable URL state
 - Product details with image gallery, seller trust score, and reviews
-- **Sell flow**: multi-step listing wizard with a rule-based "Smart Price Suggestion"
-- **Buy flow**: Buy Now, Make an Offer (accept / reject / counter), Orders with pickup tracking
+- **Sell flow**: multi-step listing wizard with photo uploads and a rule-based "Smart Price Suggestion"
+- **Buy flow**: Buy Now, Cart with per-seller checkout, Make an Offer (accept / reject / counter), Orders with pickup tracking
 - **Rent flow**: daily/weekly/monthly pricing, deposits, request → approve → return
-- **Exchange flow**: barter requests with accept/reject and item matching
-- Real-time-style chat between buyers and sellers, tied to a listing
+- **Exchange flow**: barter requests with accept/reject
+- Buyer–seller chat tied to a listing
 - Wishlist, notifications, reviews & ratings, reporting/moderation
 - Sustainability ("Campus Impact") and trust-score estimates
-- Full admin dashboard: metrics, moderation queue, user & listing management
-- Fully responsive, with mobile bottom navigation and desktop nav
+- Admin dashboard: metrics, moderation queue, user & listing management
+- Fully responsive, with dark/light theme
 
 ## Tech Stack
 
-- **Framework**: Next.js (App Router) + TypeScript + React
-- **Styling**: Tailwind CSS v4 + hand-rolled Radix-based UI primitives (shadcn-style)
-- **Animation**: Framer Motion (respects `prefers-reduced-motion`)
-- **Icons**: Lucide
-- **Database**: PostgreSQL via **Supabase** (see `instruction.md`)
-- **ORM**: Prisma
-- **Auth**: Custom college-email + password + OTP flow, signed JWT session cookies (`jose`),
-  edge middleware for route protection — no third-party auth vendor required
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16 (App Router) + React 19 + TypeScript, Tailwind CSS v4, Radix UI, Framer Motion |
+| Backend | **Express 5** (Node.js) + TypeScript, Zod validation, Multer uploads |
+| Database | **PostgreSQL 16** (Docker) via Prisma ORM, with versioned migrations |
+| Auth | College email + password + OTP; signed JWT (`jose`) in an httpOnly session cookie, bcrypt password hashes |
 
 ## Architecture
 
 ```
-src/
-├── app/              # Routes (App Router) — pages + API routes
-│   ├── (app)/        # Authenticated marketplace shell (navbar + bottom nav)
-│   ├── admin/         # Admin dashboard shell
-│   ├── api/            # Route handlers (auth, products, offers, rentals, ...)
-│   └── login|register|verify|onboarding|forgot-password/
-├── components/        # Reusable UI (ui/ = design-system primitives)
-├── services/          # Business logic, isolated from route handlers
-│   ├── authService, productService, messagingService, ...
-│   ├── pricingService        # rule-based "AI" price estimator
-│   ├── recommendationService # rule-based recommendation engine
-│   └── storageService        # image storage abstraction (placeholder ↔ Supabase Storage)
-├── lib/               # prisma client, session/auth helpers, zod schemas, constants
-└── middleware.ts       # route protection (session + admin-only routes)
-prisma/
-├── schema.prisma
-└── seed.ts             # 30 users, 50+ products, orders, offers, reviews, notifications
+campus-commerce/
+├── docker-compose.yml     # PostgreSQL 16
+├── backend/               # Express REST API — owns the database
+│   ├── prisma/
+│   │   ├── schema.prisma  # users, products, orders, offers, rentals, exchanges, chat, ...
+│   │   ├── migrations/    # versioned SQL migrations
+│   │   └── seed.ts        # 29 users, 55 products, orders, offers, reviews, notifications
+│   └── src/
+│       ├── server.ts      # entry point
+│       ├── app.ts         # middleware stack + route mounting
+│       ├── config/env.ts  # typed environment config
+│       ├── middleware/    # session → user loading, requireUser/requireAdmin, error handler
+│       ├── routes/        # one router per resource (auth, products, cart, orders, ...)
+│       ├── services/      # business logic (recommendations, trust score, messaging, ...)
+│       └── lib/           # prisma client, session cookies, zod schemas, HTTP helpers
+└── frontend/              # Next.js UI — never touches the database
+    └── src/
+        ├── app/           # pages (App Router)
+        ├── components/    # UI components (ui/ = design-system primitives)
+        ├── lib/api.ts     # server-side API client (forwards the session cookie)
+        ├── proxy.ts       # redirects signed-out visitors away from app pages
+        └── types/         # API response types
 ```
 
-Every backend feature that would normally require external infrastructure (image hosting,
-transactional email) is behind a small `services/*Service.ts` abstraction with a working
-demo fallback, so nothing in the UI is a dead button — see `services/storageService.ts` and
-`services/authService.ts`'s OTP handling for examples.
+**How the two halves talk.** Next.js rewrites `/api/*` and `/uploads/*` to the Express
+server, so browser requests stay same-origin and the session cookie works without CORS.
+Server Components call the backend directly through `lib/api.ts`, forwarding the visitor's
+cookie. The backend is the single source of truth for authentication and authorization:
+it verifies the session on every request and enforces who may do what.
 
-## Database Setup
+## API Overview
 
-This app is configured for **Supabase Postgres**. Full step-by-step instructions —
-creating a project, getting connection strings, pushing the schema, seeding data, and
-optionally enabling Supabase Storage for real photo uploads — are in **[instruction.md](./instruction.md)**.
+All endpoints are under `/api` and return JSON (`{ "error": "..." }` on failure).
 
-Quick version:
+| Area | Endpoints |
+|---|---|
+| Auth | `POST /auth/register` · `/auth/verify` · `/auth/login` · `/auth/logout` · `/auth/resend-otp` · `/auth/forgot-password` · `/auth/reset-password` |
+| Account | `GET /me` · `/me/collections` · `/me/nav` · `/me/listings` · `POST /onboarding` · `PATCH /settings/{account,password,preferences}` · `POST /settings/logout-all` |
+| Catalog | `GET /categories` · `/locations` · `/stats/landing` (public) |
+| Products | `GET /products?q=&category=&type=&condition=&minPrice=&maxPrice=&sort=` · `/products/feed` · `/products/:id` · `/products/:id/similar` · `POST /products` · `POST /products/:id/view` · `PATCH /products/:id` |
+| Users | `GET /users/:id/profile` · `/users/:id/stats` (`:id` may be `me`) |
+| Shopping | `GET/POST/DELETE /wishlist` · `GET/POST/DELETE /cart` · `POST /cart/checkout` |
+| Orders | `GET /orders` · `POST /orders` · `PATCH /orders/:id` |
+| Offers | `GET /offers` · `POST /offers` · `PATCH /offers/:id` (accept / reject / counter) |
+| Rentals | `GET /rentals` · `POST /rentals` · `PATCH /rentals/:id` |
+| Exchanges | `GET /exchanges` · `POST /exchanges` · `PATCH /exchanges/:id` |
+| Messaging | `GET /conversations` · `GET /conversations/:id` · `POST /conversations` · `POST /conversations/:id/messages` |
+| Notifications | `GET /notifications` · `POST /notifications/:id/read` · `POST /notifications/read-all` |
+| Trust | `POST /reviews` · `POST /reports` |
+| Uploads | `POST /uploads` (multipart `photos`, up to 6 images × 5 MB) → `{ urls }`, served at `/uploads/*` |
+| Admin | `GET /admin/stats` · `/admin/users?q=` · `/admin/listings` · `/admin/reports` · `PATCH /admin/users/:id` · `PATCH /admin/reports/:id` |
+
+## Getting Started
+
+**Prerequisites:** Node.js 20+ and Docker Desktop (or any PostgreSQL 14+ server).
 
 ```bash
-cp .env.example .env      # fill in DATABASE_URL / DIRECT_URL from Supabase
-npx prisma generate
-npx prisma db push
+# 1. Install dependencies (root, backend and frontend)
+npm run setup
+
+# 2. Configure environment
+cp backend/.env.example backend/.env           # set SESSION_SECRET
+cp frontend/.env.example frontend/.env.local
+
+# 3. Start PostgreSQL, create the schema and load demo data
+docker compose up -d db
+npm run db:migrate
 npm run db:seed
+
+# 4. Run backend (http://localhost:4000) and frontend (http://localhost:3000) together
+npm run dev
+```
+
+**Port already in use?** Everything is configurable. For example, to run Postgres on 5434
+and the API on 4100:
+
+```bash
+DB_PORT=5434 docker compose up -d db
+# backend/.env:        PORT=4100 and DATABASE_URL=...@localhost:5434/...
+# frontend/.env.local: BACKEND_URL="http://localhost:4100"
 ```
 
 ## Environment Variables
 
-See `.env.example` for the full list. Required:
+**`backend/.env`**
 
 | Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | Pooled Postgres connection string (Supabase) |
-| `DIRECT_URL` | Direct connection string, used for migrations |
-| `SESSION_SECRET` | Signs session JWTs — generate with `openssl rand -base64 32` |
-| `ALLOWED_EMAIL_DOMAIN` | Only emails ending in this domain can register (no real university is hard-coded) |
-| `NEXT_PUBLIC_APP_URL` | Base URL, used for metadata |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `SESSION_SECRET` | Signs session JWTs — generate with `openssl rand -base64 32` (required in production) |
+| `ALLOWED_EMAIL_DOMAIN` | Only emails ending in this domain can register |
+| `PORT` | API port (default `4000`) |
+| `FRONTEND_URL` | Frontend origin allowed by CORS (default `http://localhost:3000`) |
+| `UPLOAD_DIR` | Where listing photos are stored (default `uploads`) |
 
-Optional (enables real photo uploads instead of placeholders):
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+**`frontend/.env.local`**
 
-## Installation
+| Variable | Purpose |
+|---|---|
+| `BACKEND_URL` | Where the Express API runs (default `http://localhost:4000`) |
+| `ALLOWED_EMAIL_DOMAIN` | Shown in registration hints; keep in sync with the backend |
 
-```bash
-npm install
-cp .env.example .env   # then fill in real values, see instruction.md
-npx prisma generate
-npx prisma db push
-npm run db:seed
-```
+## Scripts (from the repo root)
 
-## Development
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:3000`.
-
-## Production Build
-
-```bash
-npm run build
-npm run start
-```
+| Command | What it does |
+|---|---|
+| `npm run dev` | Backend + frontend in watch mode |
+| `npm run build` | Compile the backend and build the frontend |
+| `npm run start` | Run both production builds |
+| `npm run db:migrate` | Apply Prisma migrations (creates new ones in development) |
+| `npm run db:seed` | Load demo data |
+| `npm run db:studio` | Browse the database in Prisma Studio |
 
 ## Demo Accounts
 
-Seeded by `prisma/seed.ts` (password for both: `CampusDemo123!`):
+Seeded by `backend/prisma/seed.ts` (password for both: `CampusDemo123!`):
 
 | Role | Email |
 |---|---|
 | Student | `student@university.edu` |
 | Admin | `admin@university.edu` |
 
-The login page has one-click buttons to fill these in. Registration OTPs are shown directly
-in the UI (toast) in this demo since no transactional email provider is configured —
-see `services/authService.ts`.
+Registration OTPs are shown directly in the UI in this demo, since no transactional email
+provider is configured — see `backend/src/services/authService.ts`.
 
 ## Future Improvements
 
-- Real-time chat via WebSockets (the schema and API already separate cleanly for this — see `services/messagingService.ts`)
-- ML-based price suggestions and recommendations (both services expose a stable function
-  signature specifically so a model can be swapped in without touching callers)
+- Real-time chat via WebSockets
+- ML-based price suggestions and recommendations (both expose stable function signatures so a model can be swapped in)
 - Payment integration for in-app settlement
-- Push notifications
+- Object storage (S3 / Cloudinary) for uploads in multi-instance deployments
 - Transactional email for OTPs and order updates
